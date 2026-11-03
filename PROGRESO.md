@@ -119,3 +119,20 @@ https://github.com/victormanuelllanos1995-ship-it/devops-TP10
 - Credenciales GHCR cerradas y eliminadas de la configuracion temporal.
 - Pendiente: desplegar Produccion con imagenes GHCR.
 - Pendiente: comprobar HPA y automatizacion CD.
+
+## TP10C - GHCR y Produccion recuperados
+
+- Autenticacion GHCR con token classic: exitosa.
+- Backend 1.0.0 descargable desde GHCR.
+- Frontend 1.0.2 descargable desde GHCR.
+- Secret ghcr-creds configurado en staging y production.
+- ServiceAccount default asociado a ghcr-creds.
+- Contraseña interna PostgreSQL sincronizada con Kubernetes Secret.
+- PVC PostgreSQL de Produccion: 5Gi Bound.
+- Backend Produccion: 3/3 Running.
+- Frontend Produccion: 2/2 Running.
+- PostgreSQL Produccion: 1/1 Running.
+- Metrics Server operativo.
+- HPA backend: CPU 11%, objetivo 70%, minimo 3 y maximo 6.
+- Pendiente: Smoke Test Produccion y confirmar estado final Helm.
+- Pendiente: GitHub Actions, aprobacion manual y rollback.

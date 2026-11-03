@@ -4,7 +4,7 @@ global:
 backend:
   replicas: 1
   image:
-    repository: devops-portfolio-backend
+    repository: ghcr.io/victormanuelllanos1995-ship-it/devops-portfolio-backend
     tag: 1.0.0
     pullPolicy: IfNotPresent
   port: 5000
@@ -23,7 +23,7 @@ backend:
 frontend:
   replicas: 1
   image:
-    repository: devops-portfolio-frontend
+    repository: ghcr.io/victormanuelllanos1995-ship-it/devops-portfolio-frontend
     tag: 1.0.2
     pullPolicy: IfNotPresent
   port: 80
