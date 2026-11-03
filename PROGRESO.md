@@ -107,3 +107,15 @@ https://github.com/victormanuelllanos1995-ship-it/devops-TP10
 - Helm lint Staging: aprobado.
 - Helm lint Produccion: aprobado.
 - Pendiente: publicar imagen en GHCR y desplegar Produccion.
+
+## TP10C - Imagenes publicadas en GHCR
+
+- Backend 1.0.0 publicado correctamente.
+- Frontend 1.0.2 publicado correctamente.
+- Registro: ghcr.io/victormanuelllanos1995-ship-it.
+- Docker login GHCR: exitoso.
+- Docker push Backend: exitoso.
+- Docker push Frontend: exitoso.
+- Credenciales GHCR cerradas y eliminadas de la configuracion temporal.
+- Pendiente: desplegar Produccion con imagenes GHCR.
+- Pendiente: comprobar HPA y automatizacion CD.
