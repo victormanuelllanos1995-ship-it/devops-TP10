@@ -136,3 +136,20 @@ https://github.com/victormanuelllanos1995-ship-it/devops-TP10
 - HPA backend: CPU 11%, objetivo 70%, minimo 3 y maximo 6.
 - Pendiente: Smoke Test Produccion y confirmar estado final Helm.
 - Pendiente: GitHub Actions, aprobacion manual y rollback.
+
+## TP10C - Produccion validada
+
+- GHCR configurado con imagePullSecret.
+- Backend y Frontend descargados desde GHCR.
+- PostgreSQL conectado y autenticacion corregida.
+- Backend: 3/3 Running.
+- Frontend: 2/2 Running.
+- PostgreSQL: 1/1 Running.
+- PVC: Bound, 5Gi.
+- Smoke Test Frontend: HTTP 200.
+- Smoke Test Backend: HTTP 200.
+- Smoke Test API Notes: HTTP 200.
+- Metrics Server operativo.
+- HPA: CPU 2%/70%, minimo 3, maximo 6.
+- Pendiente: prueba de escalado bajo carga.
+- Pendiente: GitHub Actions, aprobacion manual y rollback.
