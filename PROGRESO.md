@@ -46,3 +46,15 @@ https://github.com/victormanuelllanos1995-ship-it/devops-TP10
 - Checksums SHA256 de ConfigMap y Secret.
 - kubectl dry-run DEV y PROD.
 - scripts/render-validate.sh ejecutado correctamente.
+
+## TP10C - Configuración inicial
+
+- values-staging.yaml creado.
+- values-prod.yaml creado.
+- Helm lint aprobado en ambos entornos.
+- Renderizado de Staging y Producción aprobado.
+- HPA desactivado en Staging.
+- HPA de Producción configurado: mínimo 3, máximo 6, CPU 70%.
+- Plantilla hpa.yaml creada.
+- Script verificar-helm-entornos.sh creado.
+- Pendiente: Metrics Server, despliegues y pipeline CD.
