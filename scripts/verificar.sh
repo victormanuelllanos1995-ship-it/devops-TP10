@@ -10,8 +10,8 @@ echo "=== Verificación Helm + Ingress — TP 10 ==="
 echo ""
 
 echo "--- Helm release ---"
-if helm status mi-app &>/dev/null; then
-    STATUS=$(helm status mi-app | grep STATUS | awk '{print $2}')
+if helm status mi-app -n devops-portfolio &>/dev/null; then
+    STATUS=$(helm status mi-app -n devops-portfolio | sed -n 's/^STATUS: *//p' | head -n 1)
     [ "$STATUS" = "deployed" ] && ok "Release mi-app → $STATUS" || fail "Release mi-app → $STATUS"
 else
     fail "Release mi-app no encontrado"
