@@ -68,3 +68,15 @@ https://github.com/victormanuelllanos1995-ship-it/devops-TP10
 - Metrics Server: pendiente.
 - Despliegues Staging y Producción: pendientes.
 - Pipeline helm-cd.yml: pendiente.
+
+## TP10C - Infraestructura preparada
+
+- Backend 1.0.0 construido e importado en controlplane y node01.
+- Frontend 1.0.1 construido e importado en controlplane y node01.
+- Traefik instalado mediante Helm.
+- Traefik NodePort HTTP: 30080.
+- Metrics Server instalado.
+- API metrics.k8s.io: Available=True.
+- Métricas de CPU y memoria disponibles en ambos nodos.
+- TLS insecure configurado exclusivamente para Killercoda.
+- Pendiente: despliegue Staging, Smoke Tests y Producción.
