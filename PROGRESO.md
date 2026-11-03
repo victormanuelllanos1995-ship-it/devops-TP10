@@ -58,3 +58,13 @@ https://github.com/victormanuelllanos1995-ship-it/devops-TP10
 - Plantilla hpa.yaml creada.
 - Script verificar-helm-entornos.sh creado.
 - Pendiente: Metrics Server, despliegues y pipeline CD.
+
+## TP10C - Avance adicional
+- Traefik instalado mediante Helm.
+- Namespace: traefik.
+- Pod: 1/1 Running.
+- Service NodePort HTTP: 30080.
+- IngressClass: traefik.
+- Metrics Server: pendiente.
+- Despliegues Staging y Producción: pendientes.
+- Pipeline helm-cd.yml: pendiente.
