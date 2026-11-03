@@ -1,0 +1,122 @@
+name: PR Check - Validacion de Calidad y Helm Chart
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    name: Linting Python y Tests Unitarios
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install flake8 pytest pytest-cov PyYAML yamllint
+
+      - name: Flake8
+        run: flake8 backend/ --max-line-length=120
+
+      - name: Pruebas unitarias
+        run: |
+          if [ -d backend/tests ] && find backend/tests -name 'test_*.py' | grep -q .; then
+            pytest backend/tests/ --cov=backend --cov-report=term-missing
+          else
+            echo "::warning::No se encontraron pruebas unitarias en backend/tests."
+          fi
+
+  helm-validation:
+    name: Helm Render First Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar herramientas
+        run: pip install PyYAML yamllint
+
+      - name: Instalar Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.13.0'
+
+      - name: Helm Lint DEV
+        run: helm lint ./devops-portfolio -f values-dev.yaml
+
+      - name: Helm Lint PROD
+        run: helm lint ./devops-portfolio -f values-prod.yaml
+
+      - name: Renderizar DEV
+        run: |
+          helm template mi-app ./devops-portfolio \
+            -f values-dev.yaml > manifests-rendered-dev.yaml
+
+      - name: Renderizar PROD
+        run: |
+          helm template mi-app ./devops-portfolio \
+            -f values-prod.yaml > manifests-rendered-prod.yaml
+
+      - name: Validar YAML con Python
+        run: |
+          python3 - <<'PY'
+          import yaml
+
+          for filename in [
+              "manifests-rendered-dev.yaml",
+              "manifests-rendered-prod.yaml"
+          ]:
+              with open(filename) as stream:
+                  docs = [d for d in yaml.safe_load_all(stream) if d]
+
+              if not docs:
+                  raise SystemExit(f"[FAIL] {filename}: sin objetos")
+
+              for doc in docs:
+                  if not isinstance(doc, dict) or not doc.get("kind"):
+                      raise SystemExit(f"[FAIL] Objeto invalido en {filename}")
+
+              print(f"[PASS] {filename}: {len(docs)} objetos validos")
+          PY
+
+      - name: Validar yamllint
+        run: |
+          yamllint -d "{extends: default, rules: {line-length: {max: 120}, document-start: disable}}" \
+            manifests-rendered-dev.yaml manifests-rendered-prod.yaml
+
+      - name: Verificar checksums
+        run: |
+          for file in manifests-rendered-dev.yaml manifests-rendered-prod.yaml; do
+            grep -q 'checksum/config:' "$file"
+            grep -q 'checksum/secret:' "$file"
+            echo "[PASS] Checksums encontrados en $file"
+          done
+
+      - name: Publicar manifiestos renderizados
+        uses: actions/upload-artifact@v4
+        with:
+          name: manifiestos-k8s-renderizados
+          path: |
+            manifests-rendered-dev.yaml
+            manifests-rendered-prod.yaml
+          retention-days: 7
