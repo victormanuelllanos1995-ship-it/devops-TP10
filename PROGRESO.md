@@ -37,3 +37,12 @@
 
 ### Repositorio
 https://github.com/victormanuelllanos1995-ship-it/devops-TP10
+
+## TP10B - Validaciones completadas
+- Helm lint DEV y PROD.
+- Renderizado DEV y PROD.
+- Python YAML: 11 objetos válidos por entorno.
+- yamllint sin errores.
+- Checksums SHA256 de ConfigMap y Secret.
+- kubectl dry-run DEV y PROD.
+- scripts/render-validate.sh ejecutado correctamente.
