@@ -1,0 +1,193 @@
+name: TP10C - Helm Continuous Delivery
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'devops-portfolio/**'
+      - 'scripts/**'
+      - '.github/workflows/helm-cd.yml'
+
+  workflow_dispatch:
+    inputs:
+      deploy_production:
+        description: 'Solicitar despliegue de Produccion'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: tp10c-deployment
+  cancel-in-progress: false
+
+jobs:
+
+  build-and-push:
+    name: Build and Push GHCR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Backend
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/devops-portfolio-backend:${{ github.sha }}
+
+      - name: Build Frontend
+        uses: docker/build-push-action@v7
+        with:
+          context: ./frontend
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/devops-portfolio-frontend:${{ github.sha }}
+
+  helm-validation:
+    name: Helm Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install Python dependencies
+        run: pip install PyYAML
+
+      - name: Lint Staging
+        run: |
+          helm lint ./devops-portfolio \
+            -f devops-portfolio/values-staging.yaml
+
+      - name: Lint Production
+        run: |
+          helm lint ./devops-portfolio \
+            -f devops-portfolio/values-prod.yaml
+
+      - name: Render Staging
+        run: |
+          helm template notes-staging ./devops-portfolio \
+            -f devops-portfolio/values-staging.yaml \
+            > /tmp/staging.yaml
+
+      - name: Render Production
+        run: |
+          helm template notes-prod ./devops-portfolio \
+            -f devops-portfolio/values-prod.yaml \
+            > /tmp/production.yaml
+
+      - name: Validate YAML
+        run: |
+          python3 - <<'PY'
+          import yaml
+
+          for filename in ["/tmp/staging.yaml", "/tmp/production.yaml"]:
+              with open(filename) as f:
+                  docs = [d for d in yaml.safe_load_all(f) if d]
+
+              assert docs, filename
+
+              for doc in docs:
+                  assert isinstance(doc, dict)
+                  assert "kind" in doc
+
+              print(f"[PASS] {filename}: {len(docs)} objetos")
+          PY
+
+  deploy-staging:
+    name: Deploy Staging
+    needs:
+      - build-and-push
+      - helm-validation
+
+    runs-on:
+      - self-hosted
+      - k8s
+
+    environment: staging
+
+    env:
+      KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/devops-portfolio-backend
+      FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/devops-portfolio-frontend
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure Kubernetes
+        run: |
+          test -n "$KUBECONFIG_B64"
+          mkdir -p "$HOME/.kube"
+          printf '%s' "$KUBECONFIG_B64" |
+            base64 --decode > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+          kubectl get nodes
+
+      - name: Deploy and Test Staging
+        run: scripts/deploy-env.sh staging
+
+  deploy-production:
+    name: Deploy Production - Approval Required
+    needs:
+      - deploy-staging
+
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.deploy_production == true
+
+    runs-on:
+      - self-hosted
+      - k8s
+
+    environment: production
+
+    env:
+      KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/devops-portfolio-backend
+      FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/devops-portfolio-frontend
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure Kubernetes
+        run: |
+          test -n "$KUBECONFIG_B64"
+          mkdir -p "$HOME/.kube"
+          printf '%s' "$KUBECONFIG_B64" |
+            base64 --decode > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+          kubectl get nodes
+
+      - name: Deploy Production with Rollback
+        run: scripts/deploy-env.sh production

@@ -153,3 +153,19 @@ https://github.com/victormanuelllanos1995-ship-it/devops-TP10
 - HPA: CPU 2%/70%, minimo 3, maximo 6.
 - Pendiente: prueba de escalado bajo carga.
 - Pendiente: GitHub Actions, aprobacion manual y rollback.
+
+## TP10C - Automatizacion CI/CD
+
+- scripts/smoke-test.sh creado.
+- scripts/deploy-env.sh creado.
+- Smoke Tests reutilizables.
+- Helm upgrade con atomic y wait.
+- Rollback ante fallo del Smoke Test.
+- Workflow helm-cd.yml creado.
+- Build y publicacion GHCR automatizados.
+- Validacion Helm Staging y Produccion automatizada.
+- Deploy Staging preparado.
+- Deploy Produccion con environment protegido preparado.
+- Pendiente: configurar GitHub Environments.
+- Pendiente: runner self-hosted con acceso al cluster.
+- Pendiente: ejecutar Actions y comprobar rollback.
