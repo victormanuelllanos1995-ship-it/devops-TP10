@@ -96,3 +96,14 @@ https://github.com/victormanuelllanos1995-ship-it/devops-TP10
 - Smoke Test API /api/notes: HTTP 200.
 - Pruebas realizadas mediante kubectl port-forward.
 - Pendiente: Traefik, Producción, HPA y pipeline CD.
+
+## TP10C - Correccion Frontend
+
+- Nginx corregido: backend-service:5000.
+- Frontend actualizado a version 1.0.2.
+- Imagen devops-portfolio-frontend:1.0.2 construida.
+- values-staging.yaml actualizado.
+- values-prod.yaml actualizado.
+- Helm lint Staging: aprobado.
+- Helm lint Produccion: aprobado.
+- Pendiente: publicar imagen en GHCR y desplegar Produccion.
