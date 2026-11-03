@@ -80,3 +80,19 @@ https://github.com/victormanuelllanos1995-ship-it/devops-TP10
 - Métricas de CPU y memoria disponibles en ambos nodos.
 - TLS insecure configurado exclusivamente para Killercoda.
 - Pendiente: despliegue Staging, Smoke Tests y Producción.
+
+## TP10C - STAGING: SMOKE TEST APROBADO
+
+- Release Helm: notes-staging.
+- Namespace: staging.
+- Revision Helm: 3.
+- Backend: 1/1 Running.
+- Frontend: 1/1 Running.
+- PostgreSQL: 1/1 Running.
+- Frontend Nginx corregido: backend-service:5000.
+- Nueva imagen frontend: 1.0.2.
+- Smoke Test Frontend: HTTP 200.
+- Smoke Test Backend /health: HTTP 200.
+- Smoke Test API /api/notes: HTTP 200.
+- Pruebas realizadas mediante kubectl port-forward.
+- Pendiente: Traefik, Producción, HPA y pipeline CD.
