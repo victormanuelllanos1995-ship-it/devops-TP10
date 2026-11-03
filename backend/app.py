@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, Response
+﻿from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from prometheus_client import (
     Counter, Histogram, Gauge,
@@ -26,11 +26,11 @@ NOTES_TOTAL = Gauge(
 )
 DB_ERRORS = Counter(
     'app_db_errors_total',
-    'Total de errores de conexión a la base de datos'
+    'Total de errores de conexiÃ³n a la base de datos'
 )
 APP_INFO = Gauge(
     'app_info',
-    'Información de la aplicación',
+    'InformaciÃ³n de la aplicaciÃ³n',
     ['version', 'environment']
 )
 APP_INFO.labels(
@@ -64,22 +64,37 @@ def get_conn():
     )
 
 def init_db():
+    conn = None
     try:
         conn = get_conn()
-        cur = conn.cursor()
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS notes (
-                id SERIAL PRIMARY KEY,
-                title VARCHAR(200) NOT NULL,
-                content TEXT,
-                created_at TIMESTAMP DEFAULT NOW()
-            )
-        """)
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS notes (
+                    id SERIAL PRIMARY KEY,
+                    title VARCHAR(200) NOT NULL,
+                    content TEXT,
+                    created_at TIMESTAMP DEFAULT NOW()
+                )
+            """)
         conn.commit()
-        cur.close(); conn.close()
-    except Exception as e:
-        print(f"Error inicializando DB: {e}")
+    finally:
+        if conn is not None:
+            conn.close()
 
+def init_db_with_retry(max_attempts=30, delay_seconds=2):
+    for attempt in range(1, max_attempts + 1):
+        try:
+            init_db()
+            app.logger.info("Base de datos inicializada.")
+            return
+        except Exception as exc:
+            app.logger.warning(
+                "Esperando PostgreSQL (%s/%s): %s",
+                attempt, max_attempts, exc
+            )
+            if attempt == max_attempts:
+                raise
+            time.sleep(delay_seconds)
 def update_notes_gauge():
     try:
         conn = get_conn()
@@ -147,6 +162,8 @@ def delete_note(note_id):
     cur.close(); conn.close()
     return jsonify({'message': 'nota eliminada'})
 
+init_db_with_retry()
+
 if __name__ == '__main__':
-    init_db()
     app.run(host='0.0.0.0', port=5000)
+
