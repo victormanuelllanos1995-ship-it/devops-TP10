@@ -18,6 +18,8 @@ spec:
       labels:
         app: backend
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: controlplane
       containers:
         - name: backend
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
